@@ -46,10 +46,10 @@ refinement: "where" expression
 // Expressions
 
 expression: value
-          | arith_exp
-          | boolean_exp
           | index_access
           | function_return
+          | binary_op
+          | unary_op
 
 value: ID                           -> id
      | FLOATLIT                     -> u_float
@@ -65,21 +65,22 @@ function_return: ID "(" func_arguments ")"
 index_access: ID "[" expression "]"                   -> index_access
             | ID func_arguments "[" expression "]"    -> index_access_func
 
-arith_exp: expression "+" expression     -> arith_plus
-         | expression "-" expression     -> arith_minus
-         | expression "*" expression     -> arith_multiplication
-         | expression "/" expression     -> arith_divison
-         | expression "%" expression     -> arith_modulus
 
-boolean_exp: "!" expression                -> bool_not
-           | expression "==" expression    -> bool_eq
-           | expression "!=" expression    -> bool_neq
-           | expression ">=" expression    -> bool_ge
-           | expression ">"  expression    -> bool_gt
-           | expression "<=" expression    -> bool_le
-           | expression "<"  expression    -> bool_lt
-           | expression "&&" expression    -> bool_and
-           | expression "||" expression    -> bool_or
+unary_op: "!" expression -> not
+
+binary_op: expression "+" expression     -> plus
+         | expression "-" expression     -> minus
+         | expression "*" expression     -> multiplication
+         | expression "/" expression     -> divison
+         | expression "%" expression     -> modulus
+         | expression "==" expression    -> equals
+         | expression "!=" expression    -> not_equals
+         | expression ">=" expression    -> greather_equals
+         | expression ">"  expression    -> greather
+         | expression "<=" expression    -> less_equals
+         | expression "<"  expression    -> less
+         | expression "&&" expression    -> and
+         | expression "||" expression    -> or
 
 //
 // sPLash Terminals
