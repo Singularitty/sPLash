@@ -6,12 +6,12 @@
 start: (declaration | definition)* main_body
 
 // Declarations
-declaration: (function_declaration | var_declaration) ";"
+?declaration: (function_declaration | var_declaration) ";"
 function_declaration: ID type req_arguments
 var_declaration: ID type
 
 // Definitions
-definition: function_def | value_def
+?definition: function_def | value_def
 function_def: ID type  req_arguments block
 value_def: ID type "=" expression ";"
 
@@ -45,22 +45,22 @@ refinement: "where" expression
 
 // Expressions
 
-expression: value
+?expression: value
           | index_access
           | function_return
           | binary_op
           | unary_op
 
-value: ID                           -> id
-     | FLOATLIT                     -> u_float
-     | SIGNED_FLOAT                 -> float
-     | INTLIT                       -> u_int
-     | SIGNED_INT                   -> int
-     | STRING                       -> string
-     | "true"                       -> true
-     | "false"                      -> false
+value: ID                           
+     | FLOATLIT                     
+     | SIGNED_FLOAT                 
+     | INTLIT                       
+     | SIGNED_INT                   
+     | STRING                       
+     | "true"                       
+     | "false"                      
 
-function_return: ID "(" func_arguments ")"
+function_return: ID func_arguments
 
 index_access: ID "[" expression "]"                   -> index_access
             | ID func_arguments "[" expression "]"    -> index_access_func

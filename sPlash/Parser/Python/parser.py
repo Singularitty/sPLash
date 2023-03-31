@@ -1,10 +1,8 @@
 import sys
-
+from typing import List, Tuple, Any
 from lark import Lark, Transformer
-
-
-
-
+from AstTransformer import AstTransformer
+import rich
 
 def main():
 
@@ -17,9 +15,11 @@ def main():
 
     parser = Lark.open("sPLash.lark")
 
-    print(parser.parse(program).pretty())
+    tree = parser.parse(program)
 
+    print(AstTransformer().transform(tree))
 
+    rich.print(tree)
 
 if __name__ == "__main__":
     main()
