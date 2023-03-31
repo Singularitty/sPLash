@@ -16,18 +16,18 @@ function_def: ID type  req_arguments block
 value_def: ID type "=" expression ";"
 
 // Main
-main_body: "main" type req_arguments block
+main_body: ID type req_arguments block
 
 // Block
 block: "{" statement* "}"
 
 // Statements
-?statement: value_def
-         | ("return" expression ";") -> return_statement
+?statement: (ID type "=" expression ";")   -> local_def_statement
+         | ("return" expression ";")       -> return_statement
          | if_statement
          | while_statement
          | assignment
-         | (expression ";")          -> exp_statement
+         | (expression ";")                -> exp_statement
 
 
 if_statement: "if" expression block ("else" block)?
@@ -40,8 +40,7 @@ req_arguments: "(" (ID  type ("," ID type)*)? ")"
 func_arguments: "(" (expression ("," expression)*)? ")"
 
 // Types
-type: ":" ID refinement? 
-refinement: "where" expression
+type: ":" ID ("where" expression)? 
 
 // Expressions
 
@@ -51,7 +50,7 @@ refinement: "where" expression
           | binary_op
           | unary_op
 
-value: ID                           
+?value: ID                           
      | FLOATLIT                     
      | SIGNED_FLOAT                 
      | INTLIT                       
@@ -63,24 +62,24 @@ value: ID
 function_return: ID func_arguments
 
 index_access: ID "[" expression "]"                   -> index_access
-            | ID func_arguments "[" expression "]"    -> index_access_func
+            | function_return "[" expression "]"      -> index_access_func
 
 
-unary_op: "!" expression -> not
+unary_op: "!" expression -> unary_not
 
-binary_op: expression "+" expression     -> plus
-         | expression "-" expression     -> minus
-         | expression "*" expression     -> multiplication
-         | expression "/" expression     -> divison
-         | expression "%" expression     -> modulus
-         | expression "==" expression    -> equals
-         | expression "!=" expression    -> not_equals
-         | expression ">=" expression    -> greather_equals
-         | expression ">"  expression    -> greather
-         | expression "<=" expression    -> less_equals
-         | expression "<"  expression    -> less
-         | expression "&&" expression    -> and
-         | expression "||" expression    -> or
+binary_op: expression "+" expression     -> bin_plus
+         | expression "-" expression     -> bin_minus
+         | expression "*" expression     -> bin_multiplication
+         | expression "/" expression     -> bin_divison
+         | expression "%" expression     -> bin_modulus
+         | expression "==" expression    -> bin_equals
+         | expression "!=" expression    -> bin_not_equals
+         | expression ">=" expression    -> bin_greather_equals
+         | expression ">"  expression    -> bin_greather
+         | expression "<=" expression    -> bin_less_equals
+         | expression "<"  expression    -> bin_less
+         | expression "&&" expression    -> bin_and
+         | expression "||" expression    -> bin_or
 
 //
 // sPLash Terminals

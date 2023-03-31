@@ -15,7 +15,7 @@ class BinaryOperator(Enum):
     GE     = 8
     GT     = 9
     LE     = 10
-    LQ     = 11
+    LT     = 11
     AND    = 12
     OR     = 13
 
@@ -109,15 +109,15 @@ class IndexAccessExprNode(ExprNode):
 # Types
 
 class TypeNode(Node):
-    def __init__(self, line: int, column: int, type_name: str) -> None:
+    def __init__(self, line: int, column: int, type_id: IdentifierExprNode) -> None:
         super().__init__(line, column)
-        self.type_name = type_name
+        self.type_id = type_id
 
 class RefinedTypeNode(TypeNode):
-    def __init__(self, line: int, column: int, type_name: str, refinement: ExprNode) -> None:
+    def __init__(self, line: int, column: int, type_id: IdentifierExprNode, refinement: ExprNode) -> None:
         super().__init__(line, column, type)
         assert isinstance(refinement, ExprNode)
-        self.type_name = type_name
+        self.type_id = type_id
         self.refinement = refinement
 
 # Declarations
@@ -128,9 +128,10 @@ class DeclarationNode(Node):
 
 
 class FunctionDeclarationNode(DeclarationNode):
-    def __init__(self, line: int, column: int, func_id: str, type_: TypeNode, req_args: List[Tuple(str, TypeNode)]) -> None:
+    def __init__(self, line: int, column: int, func_id: str, type_: TypeNode, req_args: List[Tuple[IdentifierExprNode, TypeNode]]) -> None:
         super().__init__(line, column)
         assert isinstance(type_, TypeNode)
+        assert all(isinstance(arg[0], IdentifierExprNode) for arg in req_args)
         assert all(isinstance(arg[1], TypeNode) for arg in req_args)
         self.func_id = func_id
         self.type_ = type_
@@ -158,14 +159,14 @@ class BlockNode(Node):
         self.statements = statements
 
 class LocalVariableDeclarationNode(StmtNode):
-    def __init__(self, line: int, column: int, var_id: str, type_: TypeNode) -> None:
+    def __init__(self, line: int, column: int, var_id: IdentifierExprNode, type_: TypeNode) -> None:
         super().__init__(line, column)
         assert isinstance(type_, TypeNode)
         self.var_id = var_id
         self.type_ = type_
 
 class VariableAssignmentStmtNode(StmtNode):
-    def __init__(self, line: int, column: int, var_id: str, expr: ExprNode) -> None:
+    def __init__(self, line: int, column: int, var_id: IdentifierExprNode, expr: ExprNode) -> None:
         super().__init__(line, column)
         assert isinstance(expr, ExprNode)
         self.var_id = var_id
@@ -187,7 +188,6 @@ class IfStmtNode(StmtNode):
     def __init__(self, line: int, column: int, conditional: ExprNode, then_block: BlockNode, else_block: BlockNode | None) -> None:
         super().__init__(line, column)
         assert isinstance(conditional, ExprNode)
-        assert isinstance(then_block, BlockNode)
         self.conditional = conditional
         self.then_block = then_block
         if else_block is not None:
@@ -204,6 +204,14 @@ class WhileStmtNode(StmtNode):
         self.guard = guard
         self.do_block = do_block
 
+class LocalValueDefinitionNode(StmtNode):
+    def __init__(self, line: int, column: int, var_id: IdentifierExprNode, type_: TypeNode, expr: ExprNode) -> None:
+        super().__init__(line, column)
+        assert isinstance(type_, TypeNode)
+        assert isinstance(expr, ExprNode)
+        self.var_id = var_id
+        self.type_ = type_
+        self.expr = expr
 
 # Definitions
 
@@ -212,21 +220,22 @@ class DefinitionNode(Node):
         super().__init__(line, column)
 
 class FunctionDefinitionNode(DefinitionNode):
-    def __init__(self, line: int, column: int, func_id: str, type_: TypeNode, body: BlockNode) -> None:
+    def __init__(self, line: int, column: int, func_id: IdentifierExprNode, type_id: TypeNode, args: List[Tuple[IdentifierExprNode, TypeNode]], body: BlockNode) -> None:
         super().__init__(line, column)
-        assert isinstance(type_, TypeNode)
+        assert isinstance(type_id, TypeNode)
         assert isinstance(body, BlockNode)
         self.func_id = func_id
-        self.type_ = type_
+        self.type_id = type_id
+        self.args = args
         self.body = body
 
 class ValueDefinitionNode(DefinitionNode):
-    def __init__(self, line: int, column: int, var_id: str, type_: TypeNode, expr: ExprNode) -> None:
+    def __init__(self, line: int, column: int, var_id: IdentifierExprNode, type_id: TypeNode, expr: ExprNode) -> None:
         super().__init__(line, column)
-        assert isinstance(type_, TypeNode)
+        assert isinstance(type_id, TypeNode)
         assert isinstance(expr, ExprNode)
         self.var_id = var_id
-        self.type_ = type_
+        self.type_id = type_id
         self.expr = expr
 
 # Program
@@ -237,5 +246,5 @@ class ProgramNode(Node):
         assert all((isinstance(n, DeclarationNode) or isinstance(n, DefinitionNode) for n in program_body))
         self.program_body = program_body
         assert isinstance(main, FunctionDefinitionNode)
-        assert main.func_id == "main"
+        assert main.func_id.identifier == "main"
         self.main = main

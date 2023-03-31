@@ -3,6 +3,7 @@ from typing import List, Tuple, Any
 from lark import Lark, Transformer
 from AstTransformer import AstTransformer
 import rich
+import json
 
 def main():
 
@@ -17,9 +18,11 @@ def main():
 
     tree = parser.parse(program)
 
-    print(AstTransformer().transform(tree))
+    AST = AstTransformer().transform(tree)
 
     rich.print(tree)
+
+    print(json.dumps(AST))
 
 if __name__ == "__main__":
     main()
