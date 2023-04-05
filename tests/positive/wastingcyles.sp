@@ -1,8 +1,4 @@
-(* Some random functions to demonstrate that all sPLash grammar is correctly defined *)
-
-
-(* Declarations *)
-
+(* Some random functions *)
 
 
 (* This function never ends *)

@@ -66,7 +66,8 @@ main : Int () {
         c = b / 3;
         d = c % 4.0;
         f = d - 0.5;
-        h = -1 + 2;
+        (* Using the _ notation for an int *)
+        h = -1 + 2_232_2398_2_3;
         flag = h < f;
         flag = flag || (f > c);
         flag = flag && (b <= d);
