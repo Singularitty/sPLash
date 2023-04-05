@@ -1,0 +1,37 @@
+#!/bin/bash
+
+# Initialize variables
+tree_flag=0
+input_file=""
+
+# Path to the compiler
+COMPILER_PATH="src/compiler.py"
+
+# Parse arguments, if extra arguments besides --tree and input_file are included they will be ignored
+for arg in "$@"
+do
+  if [[ $arg == "--tree" ]]; then
+    tree_flag=1
+  else
+    # Last argument will always be saved as input_file
+    input_file=$arg
+  fi
+done
+
+# Check if the input file is provided
+if [[ -z $input_file ]]; then
+  echo "Error: No input file provided"
+  exit 1
+fi
+
+# Switch to virtual enviroment where dependencies where installed
+source env/bin/activate
+
+# Call the compiler with the appropriate arguments
+if [[ $tree_flag -eq 1 ]]; then
+  # If --tree flag is present, print the Abstract Syntax Tree as JSON
+  python3.10 "$COMPILER_PATH" --tree "$input_file"
+else
+  # If --tree flag is not present, print any syntactic errors that exist or do nothing if correct
+  python3.10 "$COMPILER_PATH" "$input_file"
+fi
