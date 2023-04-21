@@ -18,8 +18,16 @@ class ComplexEncoder(json.JSONEncoder):
             return o.reprJSON()
         return json.JSONEncoder.default(self, o)
 
-# Opeprators
-# These are Enums but they inherit from str class to have native Json representation
+
+def sign(x: float | int) -> str:
+    if x >= 0:
+        return "+"
+    else:
+        return "-"
+
+
+# Operators
+# These are Enums, but they inherit from str class to have native Json representation
 
 class BinaryOperator(str, Enum):
     PLUS = "+"
@@ -36,8 +44,10 @@ class BinaryOperator(str, Enum):
     AND = "&&"
     OR = "||"
 
+
 class UnaryOperator(str, Enum):
     NOT = "!"
+
 
 # We will later need to distinguish if a type refers to a single value or an array for type checking
 # Instead of creating IntArray, etc... We allow an array to have any type of items. Except void of course.
@@ -59,6 +69,7 @@ class Node(ABC):
     def reprJSON(self):
         pass
 
+
 # Expressions
 
 
@@ -75,16 +86,7 @@ class IntLiteralExprNode(ExprNode):
     def __init__(self, line: int, column: int, value: int) -> None:
         super().__init__(line, column)
         self.value = value
-
-    def reprJSON(self):
-        return {"node": self.__class__.__name__, "value": self.value}
-
-
-class SignedIntLiteralExprNode(IntLiteralExprNode):
-    def __init__(self, line: int, column: int, value: int, sign: str) -> None:
-        super().__init__(line, column, value)
-        assert sign in ("+", "-")
-        self.sign = sign
+        self.sign = sign(value)
 
     def reprJSON(self):
         return {"node": self.__class__.__name__, "sign": self.sign, "value": self.value}
@@ -94,16 +96,7 @@ class FloatLiteralExprNode(ExprNode):
     def __init__(self, line: int, column: int, value: float) -> None:
         super().__init__(line, column)
         self.value = value
-
-    def reprJSON(self):
-        return {"node": self.__class__.__name__, "value": self.value}
-
-
-class SignedFloatLiteralExprNode(FloatLiteralExprNode):
-    def __init__(self, line: int, column: int, value: float, sign: str) -> None:
-        super().__init__(line, column, value)
-        assert sign in ("+", "-")
-        self.sign = sign
+        self.sign = sign(value)
 
     def reprJSON(self):
         return {"node": self.__class__.__name__, "sign": self.sign, "value": self.value}
@@ -158,7 +151,8 @@ class BinaryExprNode(ExprNode):
         self.operator = operator
 
     def reprJSON(self):
-        return {"node": self.__class__.__name__, "operator": self.operator, "left expression": self.expr1, "right expression": self.expr2}
+        return {"node": self.__class__.__name__, "operator": self.operator, "left expression": self.expr1,
+                "right expression": self.expr2}
 
 
 class UnaryExprNode(ExprNode):
@@ -184,6 +178,7 @@ class IndexAccessExprNode(ExprNode):
     def reprJSON(self):
         return {"node": self.__class__.__name__, "identifier": self.array, "index": self.index}
 
+
 # Types
 
 
@@ -194,17 +189,20 @@ class TypeNode(Node):
         self.data_type = data_type
 
     def reprJSON(self):
-        return {"node": self.__class__.__name__, "data type" : self.data_type,  "type": self.type_id}
+        return {"node": self.__class__.__name__, "data type": self.data_type, "type": self.type_id}
 
 
 class RefinedTypeNode(TypeNode):
-    def __init__(self, line: int, column: int, type_id: IdentifierExprNode, data_type: DataType, refinement: ExprNode) -> None:
+    def __init__(self, line: int, column: int, type_id: IdentifierExprNode, data_type: DataType,
+                 refinement: ExprNode) -> None:
         super().__init__(line, column, type_id, data_type)
         assert isinstance(refinement, ExprNode)
         self.refinement = refinement
 
     def reprJSON(self):
-        return {"node": self.__class__.__name__, "data type" : self.data_type, "type": self.type_id, "refinement": self.refinement}
+        return {"node": self.__class__.__name__, "data type": self.data_type, "type": self.type_id,
+                "refinement": self.refinement}
+
 
 # Declarations
 
@@ -219,7 +217,8 @@ class DeclarationNode(Node):
 
 
 class FunctionDeclarationNode(DeclarationNode):
-    def __init__(self, line: int, column: int, func_id: str, type_: TypeNode, parameters: List[Tuple[IdentifierExprNode, TypeNode]]) -> None:
+    def __init__(self, line: int, column: int, func_id: str, type_: TypeNode,
+                 parameters: List[Tuple[IdentifierExprNode, TypeNode]]) -> None:
         super().__init__(line, column)
         assert isinstance(type_, TypeNode)
         assert all(isinstance(arg[0], IdentifierExprNode)
@@ -230,7 +229,8 @@ class FunctionDeclarationNode(DeclarationNode):
         self.parameters = parameters
 
     def reprJSON(self):
-        return {"node": self.__class__.__name__, "function identifier": self.func_id, "type": self.type_, "parameters": self.parameters}
+        return {"node": self.__class__.__name__, "function identifier": self.func_id, "type": self.type_,
+                "parameters": self.parameters}
 
 
 class VariableDeclarationNode(DeclarationNode):
@@ -242,6 +242,7 @@ class VariableDeclarationNode(DeclarationNode):
 
     def reprJSON(self):
         return {"node": self.__class__.__name__, "variable identifier": self.var_id, "type": self.type_}
+
 
 # Statements
 
@@ -306,11 +307,13 @@ class ReturnStmtNode(StmtNode):
     def reprJSON(self):
         return {"node": self.__class__.__name__, "return expression": self.return_expr}
 
-# If Statments without else block have it set to None
+
+# If Statements without else block have it set to None
 
 
 class IfStmtNode(StmtNode):
-    def __init__(self, line: int, column: int, conditional: ExprNode, then_block: BlockNode, else_block: BlockNode or None) -> None:
+    def __init__(self, line: int, column: int, conditional: ExprNode, then_block: BlockNode,
+                 else_block: BlockNode or None) -> None:
         super().__init__(line, column)
         assert isinstance(conditional, ExprNode)
         self.conditional = conditional
@@ -322,7 +325,8 @@ class IfStmtNode(StmtNode):
             self.else_block = None
 
     def reprJSON(self):
-        return {"node": self.__class__.__name__, "conditional": self.conditional, "then block": self.then_block, "else block": self.else_block}
+        return {"node": self.__class__.__name__, "conditional": self.conditional, "then block": self.then_block,
+                "else block": self.else_block}
 
 
 class WhileStmtNode(StmtNode):
@@ -347,7 +351,9 @@ class LocalValueDefinitionNode(StmtNode):
         self.expr = expr
 
     def reprJSON(self):
-        return {"node": self.__class__.__name__, "variable identifier": self.var_id, "type": self.type_, "expression": self.expr}
+        return {"node": self.__class__.__name__, "variable identifier": self.var_id, "type": self.type_,
+                "expression": self.expr}
+
 
 # Definitions
 
@@ -362,7 +368,8 @@ class DefinitionNode(Node):
 
 
 class FunctionDefinitionNode(DefinitionNode):
-    def __init__(self, line: int, column: int, func_id: IdentifierExprNode, type_: TypeNode, parameters: List[Tuple[IdentifierExprNode, TypeNode]], body: BlockNode) -> None:
+    def __init__(self, line: int, column: int, func_id: IdentifierExprNode, type_: TypeNode,
+                 parameters: List[Tuple[IdentifierExprNode, TypeNode]], body: BlockNode) -> None:
         super().__init__(line, column)
         assert isinstance(type_, TypeNode)
         assert isinstance(body, BlockNode)
@@ -372,7 +379,8 @@ class FunctionDefinitionNode(DefinitionNode):
         self.body = body
 
     def reprJSON(self):
-        return {"node": self.__class__.__name__, "function identifier": self.func_id, "type": self.type_, "parameters": self.parameters, "body": self.body}
+        return {"node": self.__class__.__name__, "function identifier": self.func_id, "type": self.type_,
+                "parameters": self.parameters, "body": self.body}
 
 
 class ValueDefinitionNode(DefinitionNode):
@@ -385,10 +393,13 @@ class ValueDefinitionNode(DefinitionNode):
         self.expr = expr
 
     def reprJSON(self):
-        return {"node": self.__class__.__name__, "variable identifier": self.var_id, "type": self.type_, "expression": self.expr}
+        return {"node": self.__class__.__name__, "variable identifier": self.var_id, "type": self.type_,
+                "expression": self.expr}
+
 
 class ArrayDefinitionNode(DefinitionNode):
-    def __init__(self, line: int, column: int, array_id : IdentifierExprNode, type_ : TypeNode, items: List[ExprNode]) -> None:
+    def __init__(self, line: int, column: int, array_id: IdentifierExprNode, type_: TypeNode,
+                 items: List[ExprNode]) -> None:
         super().__init__(line, column)
         assert isinstance(type_, TypeNode)
         assert isinstance(array_id, IdentifierExprNode)
@@ -398,13 +409,16 @@ class ArrayDefinitionNode(DefinitionNode):
         self.items = items
 
     def reprJSON(self):
-        return {"node": self.__class__.__name__, "array identifier": self.array_id, "type": self.type_, "items" : self.items}
+        return {"node": self.__class__.__name__, "array identifier": self.array_id, "type": self.type_,
+                "items": self.items}
+
 
 # Program
 
 
 class ProgramNode(Node):
-    def __init__(self, line: int, column: int, program_body: List[DeclarationNode or DefinitionNode], main: FunctionDefinitionNode) -> None:
+    def __init__(self, line: int, column: int, program_body: List[DeclarationNode or DefinitionNode],
+                 main: FunctionDefinitionNode) -> None:
         super().__init__(line, column)
         assert all((isinstance(n, DeclarationNode) or isinstance(
             n, DefinitionNode) for n in program_body))

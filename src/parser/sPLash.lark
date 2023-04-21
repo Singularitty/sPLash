@@ -52,14 +52,12 @@ func_arguments: "(" (expression ("," expression)*)? ")"
           | unary_op
           | "(" expression ")"
 
-?value: ID                           
-     | FLOATLIT                     
-     | SIGNED_FLOAT                 
-     | INTLIT                       
-     | SIGNED_INT                   
-     | STRING                       
-     | "true"                       
-     | "false"                      
+?value: ID
+     | FLOATLIT
+     | INTLIT
+     | STRING
+     | "true"
+     | "false"
 
 function_return: ID func_arguments
 
@@ -90,13 +88,12 @@ binary_op: expression "*" expression     -> bin_multiplication
 // Integer Literals
 
 %import common.INT
-INTLIT: INT ("_" INT)*
-SIGNED_INT: ("+" | "-") INTLIT
+INTLIT: ("-")? INT ("_" INT)*
 
 // Float Literals
 
-%import common.DECIMAL -> FLOATLIT
-SIGNED_FLOAT: ("+" | "-") FLOATLIT
+%import common.DECIMAL
+FLOATLIT: ("-")? DECIMAL
 
 // Identifier
 

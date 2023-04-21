@@ -3,6 +3,8 @@ from typing import List, Tuple
 from .ast_nodes import *
 
 
+
+
 class AstTransformer(Transformer):
 
     ### Expressions - Literals/Values
@@ -14,19 +16,9 @@ class AstTransformer(Transformer):
         value = float(item.value)
         return FloatLiteralExprNode(item.line, item.column, value)
 
-    def SIGNED_FLOAT(self, item) -> SignedFloatLiteralExprNode:
-        sign = item.value[0]
-        value = float(item.value[1:])
-        return SignedFloatLiteralExprNode(item.line, item.column, value, sign)
-
     def INTLIT(self, item) -> IntLiteralExprNode:
         value = int(item.value)
         return IntLiteralExprNode(item.line, item.column, value)
-
-    def SIGNED_INT(self, item) -> SignedIntLiteralExprNode:
-        sign = item.value[0]
-        value = int(item.value[1:])
-        return SignedIntLiteralExprNode(item.line, item.column, value, sign)
 
     def STRING(self, item) -> StrExprNode:
         return StrExprNode(item.line, item.column, item.value)
