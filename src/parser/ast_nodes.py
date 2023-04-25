@@ -3,6 +3,8 @@ from typing import List, Tuple
 from enum import Enum
 import json
 
+from typechecker.types import *
+
 
 class ComplexEncoder(json.JSONEncoder):
     """
@@ -181,27 +183,50 @@ class IndexAccessExprNode(ExprNode):
 
 # Types
 
-
-class TypeNode(Node):
-    def __init__(self, line: int, column: int, type_id: IdentifierExprNode, data_type: DataType) -> None:
+class ArrayTypeNode(Node):
+    def __init__(self, line: int, column: int, ttype: Node) -> None:
         super().__init__(line, column)
-        self.type_id = type_id
-        self.data_type = data_type
+        self.ttype = None
+        if isinstance(ttype, TypeNameNode):
+            self.ttype = ArrayType(ttype.ttype, 1)
+        elif isinstance(ttype, ArrayTypeNode):
+            arr_type = ttype.ttype
+            self.ttype = ArrayType(arr_type.type_name, arr_type.nest_level + 1)
+        assert self.ttype is not None
 
     def reprJSON(self):
-        return {"node": self.__class__.__name__, "data type": self.data_type, "type": self.type_id}
+        return {"node": self.__class__.__name__, "type": self.ttype}
 
 
-class RefinedTypeNode(TypeNode):
-    def __init__(self, line: int, column: int, type_id: IdentifierExprNode, data_type: DataType,
-                 refinement: ExprNode) -> None:
-        super().__init__(line, column, type_id, data_type)
-        assert isinstance(refinement, ExprNode)
+class TypeNameNode(Node):
+    def __init__(self, line: int, column: int, type_id: IdentifierExprNode) -> None:
+        super().__init__(line, column)
+        type_name = type_id.identifier
+        match type_name:
+            case "Double":
+                self.ttype = TypeName.DOUBLE
+            case "Int":
+                self.ttype = TypeName.INT
+            case "String":
+                self.ttype = TypeName.STRING
+            case "Void":
+                self.ttype = TypeName.VOID
+            case _:
+                self.ttype = None
+        assert self.ttype is not None, "Invalid type name specified. Types names must be Double, Int, String or Void"
+
+    def reprJSON(self):
+        return {"node": self.__class__.__name__, "type name": self.ttype}
+
+
+class TypeNode(Node):
+    def __init__(self, line: int, column: int, node: TypeNameNode | ArrayTypeNode, refinement: str | None) -> None:
+        super().__init__(line, column)
+        self.ttype = node.ttype
         self.refinement = refinement
 
     def reprJSON(self):
-        return {"node": self.__class__.__name__, "data type": self.data_type, "type": self.type_id,
-                "refinement": self.refinement}
+        return {"node": self.__class__.__name__, "type": self.ttype, "refinement": self.refinement}
 
 
 # Declarations

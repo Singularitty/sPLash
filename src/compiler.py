@@ -3,6 +3,7 @@ import json
 from lark import Lark
 from parser.ast_transformer import AstTransformer
 from parser.ast_nodes import ComplexEncoder
+from typechecker.typechecker import *
 
 LARK_FILE_PATH = "src/parser/sPLash.lark"
 
@@ -39,11 +40,16 @@ def main():
     tree = parser.parse(program)
 
     # create ast
-    ast = AstTransformer().transform(tree)
+    ast: ProgramNode = AstTransformer().transform(tree)
 
     # print ast in JSON format
     if print_ast:
         print(json.dumps(ast, cls=ComplexEncoder, indent=2))
+
+    # Type check
+    tp = TypeChecker(ast)
+    tp.verify(tp.ast)
+
 
 if __name__ == "__main__":
     main()

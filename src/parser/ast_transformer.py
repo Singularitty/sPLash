@@ -1,6 +1,6 @@
 from lark import Transformer
 from typing import List, Tuple
-from .ast_nodes import *
+from parser.ast_nodes import *
 
 
 
@@ -156,21 +156,18 @@ class AstTransformer(Transformer):
 
     # Types
 
-    def singleton_type(self, items) -> TypeNode:
-        type_id = items[0]
-        data_type = DataType.value
-        if len(items) == 1:
-            return TypeNode(type_id.line, type_id.column, type_id, data_type)
-        refinement = items[1]
-        return RefinedTypeNode(type_id.line, type_id.column, type_id, data_type, refinement)
+    def type(self, items) -> TypeNode:
+        refinement = None
+        if len(items) == 2:
+            refinement = items[1]
+        return TypeNode(items[0].line, items[0].column, items[0], refinement)
 
-    def array_type(self, items) -> TypeNode:
-        type_id = items[0]
-        data_type = DataType.array
-        if len(items) == 1:
-            return TypeNode(type_id.line, type_id.column, type_id, data_type)
-        refinement = items[1]
-        return RefinedTypeNode(type_id.line, type_id.column, type_id, data_type, refinement)
+    def type_name(self, items) -> TypeNameNode:
+        return TypeNameNode(items[0].line, items[0].column, items[0])
+
+    def array(self, items) -> ArrayTypeNode:
+        return ArrayTypeNode(items[0].line, items[0].column, items[0])
+
 
     # Block
 

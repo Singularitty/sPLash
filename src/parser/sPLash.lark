@@ -40,8 +40,11 @@ parameters: "(" ( (ID  type ) ("," ID type)*)? ")"
 func_arguments: "(" (expression ("," expression)*)? ")"
 
 // Types
-?type: ":" ID ("where" expression)?            -> singleton_type
-    | ":" "[" ID "]" ("where" expression)?     -> array_type
+type: ":" types ("where" expression)?
+
+?types: "[" types "]" -> array
+    | ID              -> type_name
+
 
 // Expressions
 
@@ -69,9 +72,9 @@ unary_op: "!" expression -> unary_not
 
 binary_op: expression "*" expression     -> bin_multiplication
          | expression "/" expression     -> bin_divison
+         | expression "%" expression     -> bin_modulus
          | expression "+" expression     -> bin_plus
          | expression "-" expression     -> bin_minus
-         | expression "%" expression     -> bin_modulus
          | expression "==" expression    -> bin_equals
          | expression "!=" expression    -> bin_not_equals
          | expression ">=" expression    -> bin_greather_equals
