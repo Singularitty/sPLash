@@ -1,20 +1,18 @@
 from dataclasses import dataclass
 from enum import Enum
 
-
 class TypeName(str, Enum):
-    DOUBLE = 1
-    INT = 2
-    STRING = 3
-    VOID = 4
-
+    DOUBLE = "Double"
+    INT = "Int"
+    STRING = "String"
+    VOID = "Void"
 
 class Refinement:
     pass
 
 
 @dataclass
-class ArrayType(str):
+class ArrayType():
     type_name: TypeName
     nest_level: int
 
@@ -26,6 +24,14 @@ class ArrayType(str):
         if self.nest_level != __value.nest_level:
             return False
         return True
+
+    def __str__(self) -> str:
+        return "["*self.nest_level + self.type_name + "]"*self.nest_level
+
+    def element_type(self):
+        if self.nest_level == 1:
+            return self.type_name
+        return ArrayType(self.type_name, self.nest_level-1)
 
 class TypeError(Exception):
     pass

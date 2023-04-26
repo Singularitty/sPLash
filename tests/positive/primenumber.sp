@@ -1,7 +1,9 @@
 (* Check if a number is prime in sPLash *)
 
+printf: Void (format: String, arg: Int);
+
 (* Function to check if a number is prime *)
-is_prime: Bool (num: Int) {
+is_prime: Int (num: Int) {
   if num <= 1 {
     return false;
   }
@@ -24,12 +26,12 @@ is_prime: Bool (num: Int) {
 
 main: Int () {
   number: Int = 29;
-  prime_check: Bool = is_prime(number);
+  prime_check: Int = is_prime(number);
 
   if prime_check {
-    print(number, " is prime");
+    printf("{n} is prime", number);
   } else {
-    print(number, " is not prime");
+    printf("{n} is not prime", number);
   }
   return 0;
 }

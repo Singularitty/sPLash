@@ -48,8 +48,12 @@ def main():
 
     # Type check
     tp = TypeChecker(ast)
-    tp.verify(tp.ast)
 
+    if not tp.valid:
+        print("Type Checking Failed!\nErrors:")
+        for err in tp.errors:
+            print(err)
+        sys.exit(4)
 
 if __name__ == "__main__":
     main()

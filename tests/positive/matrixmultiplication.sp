@@ -1,5 +1,7 @@
 (* Matrix multiplication in sPLash *)
 
+write_to_array: Void (matrix: [Int], index: Int, value: Int);
+
 (* Function to get an element of a matrix *)
 get_element: Int (matrix: [Int], row: Int, col: Int, num_cols: Int) {
   return matrix[row * num_cols + col];

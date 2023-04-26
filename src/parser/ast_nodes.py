@@ -46,16 +46,9 @@ class BinaryOperator(str, Enum):
     AND = "&&"
     OR = "||"
 
-
 class UnaryOperator(str, Enum):
     NOT = "!"
 
-
-# We will later need to distinguish if a type refers to a single value or an array for type checking
-# Instead of creating IntArray, etc... We allow an array to have any type of items. Except void of course.
-class DataType(str, Enum):
-    value = "value"
-    array = "array"
 
 
 # Abstract Syntax Tree Nodes
@@ -132,14 +125,14 @@ class IdentifierExprNode(ExprNode):
 
 
 class FuncReturnExprNode(ExprNode):
-    def __init__(self, line: int, column: int, func_id: str, arguments: List[ExprNode]) -> None:
+    def __init__(self, line: int, column: int, func_id: IdentifierExprNode, arguments: List[ExprNode]) -> None:
         super().__init__(line, column)
         assert all(isinstance(n, ExprNode) for n in arguments)
-        self.func_name = func_id
+        self.func_id = func_id
         self.arguments = arguments
 
     def reprJSON(self):
-        return {"node": self.__class__.__name__, "function identifier": self.func_name, "arguments": self.arguments}
+        return {"node": self.__class__.__name__, "function identifier": self.func_id, "arguments": self.arguments}
 
 
 class BinaryExprNode(ExprNode):

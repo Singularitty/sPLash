@@ -1,5 +1,9 @@
 (* GCD and LCM in sPLash *)
 
+get_input: Void ();
+
+print: Void (str: String);
+
 (* Function to calculate the GCD of two numbers *)
 gcd: Int (a: Int where a > 0, b: Int where b > 0) {
   if b == 0 {
@@ -26,9 +30,6 @@ main: Int () {
 
   result_gcd: Int = gcd(num1, num2);
   result_lcm: Int = lcm(num1, num2);
-
-  print("The GCD of ", num1, " and ", num2, " is: ", result_gcd);
-  print("The LCM of ", num1, " and ", num2, " is: ", result_lcm);
 
   return 0;
 }

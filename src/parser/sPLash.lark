@@ -55,12 +55,13 @@ type: ":" types ("where" expression)?
           | unary_op
           | "(" expression ")"
 
-?value: ID
-     | FLOATLIT
+?value: FLOATLIT
      | INTLIT
+     | BOOLLIT
      | STRING
-     | "true"
-     | "false"
+     | ID
+
+BOOLLIT: "true" | "false"
 
 function_return: ID func_arguments
 

@@ -23,9 +23,14 @@ class AstTransformer(Transformer):
     def STRING(self, item) -> StrExprNode:
         return StrExprNode(item.line, item.column, item.value)
 
-    def true(self, item) -> BoolLiteralExprNode:
-        assert (item.value == "true")
-        return BoolLiteralExprNode(item.line, item.column, True)
+    def BOOLLIT(self, item) -> BoolLiteralExprNode:
+        match item.value:
+            case "true":
+                return BoolLiteralExprNode(item.line, item.column, True)
+            case "false":
+                return BoolLiteralExprNode(item.line, item.column, False)
+            case _:
+                assert False
 
     def false(self, item) -> BoolLiteralExprNode:
         assert (item.value == "false")
