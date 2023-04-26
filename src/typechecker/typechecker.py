@@ -14,15 +14,15 @@ class Context(object):
         self.stack = [{}]
         self.errors = errors
 
-    def get_type(self, name: str) -> TypeName | ArrayType:
+    def get_type(self, name: str, node) -> TypeName | ArrayType:
         """
         Retrieves the type associated with the given name from the context's stack.
+        Node parameter is just used for error messages
         """
         for scope in self.stack:
             if name in scope:
                 return scope[name]
-        self.errors.append(
-            TypeError(f"Identifier {name} is not in the context"))
+        raise TypeError(f"Line:{node.line}, Column:{node.column}, Identifier {name} is not in the context")
 
     def set_type(self, name: str, value: TypeName | ArrayType) -> None:
         """
@@ -160,7 +160,7 @@ class TypeChecker:
                 if not self.ctx.has_identifier(name):
                     self.errors.append(TypeError(
                         f"Line:{node.line}, Column:{node.column}: Variable {name} is not defined in the cotnext"))
-                expected_type = self.ctx.get_type(name)
+                expected_type = self.ctx.get_type(name, node)
                 returned_type = self.verify(assigned_expr)
                 if not (expected_type == TypeName.DOUBLE and returned_type == TypeName.INT):
                     if returned_type != expected_type:
@@ -172,7 +172,7 @@ class TypeChecker:
 
             case ReturnStmtNode():
                 return_type = self.verify(node.return_expr)
-                expected_return = self.ctx.get_type(self.RETURN_CODE)
+                expected_return = self.ctx.get_type(self.RETURN_CODE, node)
                 if return_type != expected_return:
                     self.errors.append(TypeError(
                         f"Line:{node.line}, Column:{node.column}: Expected return expression of type {expected_return}, got {return_type} instead"))
@@ -253,12 +253,12 @@ class TypeChecker:
                 if not self.ctx.has_identifier(name):
                     self.errors.append(TypeError(
                         f"Line:{node.line}, Column:{node.column}: Variable {name} is not defined in the context"))
-                return self.ctx.get_type(name)
+                return self.ctx.get_type(name, node)
 
             case FuncReturnExprNode():
                 fname = node.func_id.identifier
                 args = node.arguments
-                (expected_return, parameter_types) = self.ctx.get_type(fname)
+                (expected_return, parameter_types) = self.ctx.get_type(fname, node)
                 if len(args) != len(parameter_types):
                     self.errors.append(TypeError(
                         f"Line:{node.line}, Column:{node.column}: {fname} expected {len(parameter_types)} arguments, got {len(args)} instead"))

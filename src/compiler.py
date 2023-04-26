@@ -47,7 +47,10 @@ def main():
         print(json.dumps(ast, cls=ComplexEncoder, indent=2))
 
     # Type check
-    tp = TypeChecker(ast)
+    try:
+        tp = TypeChecker(ast)
+    except TypeError as err:
+        raise sys.exit(err)
 
     if not tp.valid:
         print("Type Checking Failed!\nErrors:")

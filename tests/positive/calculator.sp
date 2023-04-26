@@ -1,5 +1,9 @@
 (* Simple calculator in sPLash *)
 
+
+print: Void (str: String);
+get_input: Int ();
+
 (* Function to add two numbers *)
 add: Double (a: Double, b: Double) {
   return a + b;
