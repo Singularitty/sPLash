@@ -14,10 +14,13 @@ This repository has a the following structure:
 ├── splash  
 ├── src  
 │   ├── compiler.py  
-│   └── parser  
-│       ├── ast_nodes.py  
-│       ├── ast_transformer.py  
-│       └── sPLash.lark  
+│   ├── parser  
+│   │   ├── ast_nodes.py  
+│   │   ├── ast_transformer.py  
+│   │   └── sPLash.lark  
+│   └── typechecker  
+│       ├── typechecker.py  
+│       └── types.py  
 └── tests  
     ├── negative  
     └── positive  
@@ -33,9 +36,12 @@ Description of each item:
 		- ast_nodes.py:  Absract Syntax Tree Definition and JSON Representation
 		- ast_transformer.py: Absract Syntax Tree Definition and Representation  
 		- sPLash.lark: sPLash lark grammar file 
+	- typechecker: Contains the source code for the typechecker and type definition classes
+		- typechecker: Type Checker implementation
+		- types: Type Classes defined
 - tests: Tests for the compiler
-	- negative: Programs with incorrect syntax
-	- positive: Interesting programs with correct syntax
+	- negative: Contains 20 programs with incorrect syntax and 20 programs with incorrect semantics. They are denoted by a prefix "parser" or "typechecker" depending on which error they contain.
+	- positive: Interesting programs with correct syntax and semantics
 
 
 ### How to run
@@ -62,3 +68,5 @@ If you have a file with correct syntax, you can view a JSON representation of th
 ```
 
 This will print a JSON representation of the AST generated for that program.
+
+Addionatly if the program contains incorrect semantics it will not type check, and the errors preventing it from type checking will be printing out.
