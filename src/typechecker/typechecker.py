@@ -114,15 +114,16 @@ class TypeChecker:
     def __verify_definition(self, node: DefinitionNode):
         match node:
             case FunctionDefinitionNode():
-                # Start by adding function signature to the context if it's not present
+                # Start by adding function signature to the context if it wasn't declared previously
                 return_type = node.type_.ttype
                 params = node.parameters
                 fname = node.func_id.identifier
                 if not self.ctx.has_identifier(fname):
                     signature = (return_type, [x[1].ttype for x in params])
                     self.ctx.set_type(node.func_id.identifier, signature)
-
+                # Now begin typchecking function body
                 self.ctx.enter_scope()
+                # Use return code to typecheck the return statement when we get to it
                 self.ctx.set_type(self.RETURN_CODE, return_type)
                 for (id_node, type_node) in params:
                     self.ctx.set_type(id_node.identifier, type_node.ttype)
@@ -162,6 +163,7 @@ class TypeChecker:
                         f"Line:{node.line}, Column:{node.column}: Variable {name} is not defined in the cotnext"))
                 expected_type = self.ctx.get_type(name, node)
                 returned_type = self.verify(assigned_expr)
+                # Allows the assignemnt of a Int to a Double variable, the Int is casted to a Double
                 if not (expected_type == TypeName.DOUBLE and returned_type == TypeName.INT):
                     if returned_type != expected_type:
                         self.errors.append(TypeError(
@@ -211,6 +213,7 @@ class TypeChecker:
                         f"Line:{node.line}, Column:{node.column}: Variable {name} is already defined in the context"))
                 self.ctx.set_type(name, expected_type)
                 returned_type = self.verify(node.expr)
+                # Allows the assignemnt of a Int to a Double variable, the Int is casted to a Double
                 if not (expected_type == TypeName.DOUBLE and returned_type == TypeName.INT):
                     if returned_type != expected_type:
                         self.errors.append(TypeError(
@@ -264,10 +267,12 @@ class TypeChecker:
                         f"Line:{node.line}, Column:{node.column}: {fname} expected {len(parameter_types)} arguments, got {len(args)} instead"))
                 for (i, (arg, par_type)) in enumerate(zip(args, parameter_types)):
                     arg_type = self.verify(arg)
-                    if arg_type != par_type:
-                        index = i+1
-                        self.errors.append(TypeError(
-                            f"Line:{node.line}, Column:{node.column}: Expected {par_type} for argument #{index}, got {arg_type} instead."))
+                    # Allows to call functions that take doubles with ints
+                    if not (arg_type == TypeName.INT and par_type == TypeName.DOUBLE):
+                        if arg_type != par_type:
+                            index = i+1
+                            self.errors.append(TypeError(
+                                f"Line:{node.line}, Column:{node.column}: Expected {par_type} for argument #{index}, got {arg_type} instead."))
                 return expected_return
 
             case BinaryExprNode():
@@ -283,6 +288,7 @@ class TypeChecker:
                         if exp2_type not in expected_type:
                             self.errors.append(TypeError(
                                 f"Line:{node.line}, Column:{node.column}: Expected type for the second operand should be either int or double, got {exp2_type}"))
+                        # Allows operations with Int and Double, but always returns Double
                         if exp1_type == TypeName.DOUBLE or exp2_type == TypeName.DOUBLE:
                             return TypeName.DOUBLE
                         return TypeName.INT

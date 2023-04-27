@@ -1,5 +1,8 @@
 (* Sum of squares program in sPLash *)
 
+
+printf: Void (format: String, arg1: Int, arg2: Int);
+
 (* Function to calculate the square of a number *)
 square: Int (n: Int) {
   return n * n;
@@ -16,6 +19,6 @@ sum_of_squares: Int (n: Int where n >= 0, current_sum: Int) {
 main: Int () {
   num: Int = 5;
   result: Int = sum_of_squares(num, 0);
-  print("The sum of squares of first ", num, " natural numbers is: ", result);
+  printf("The sum of squares of first {n} natural numbers is: {n}", num, result);
   return 0;
 }

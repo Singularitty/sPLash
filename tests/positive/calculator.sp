@@ -1,7 +1,8 @@
 (* Simple calculator in sPLash *)
 
-
+string_compare: Int (str1: String, str2: String);
 print: Void (str: String);
+printf: Void (format: String, arg1: String, arg2: Double);
 get_input: Int ();
 
 (* Function to add two numbers *)
@@ -26,17 +27,17 @@ divide: Double (a: Double, b: Double where b != 0) {
 
 (* Function to perform the selected operation *)
 calculate: Double (operation: String, a: Double, b: Double) {
-  if operation == "add" {
+  if string_compare(operation, "add") {
     return add(a, b);
-  } if operation == "subtract" {
+  } if string_compare(operation, "subtract") {
     return subtract(a, b);
-  } if operation == "multiply" {
+  } if string_compare(operation, "multiply") {
     return multiply(a, b);
-  } if operation == "divide" {
+  } if string_compare(operation, "divide") {
     return divide(a, b);
   } else {
     print("Invalid operation");
-    return 0;
+    return 0.;
   }
 }
 
@@ -68,19 +69,22 @@ main: Int () {
 
   while true {
     display_menu();
-    option: Int = get_input("Enter the option number (1-4): ");
+    print("Enter the option number (1-4): ");
+    option: Int = get_input();
     operation: String = get_operation(option);
 
-    if operation == "invalid" {
+    if string_compare(operation, "invalid") {
       print("Invalid option. Exiting...");
       return 1;
     }
 
-    num1: Double = get_input("Enter the first number: ");
-    num2: Double = get_input("Enter the second number: ");
+    print("Enter the first number: ");
+    num1: Double = get_input();
+    print("Enter the second number: ");
+    num2: Double = get_input();
 
     result: Double = calculate(operation, num1, num2);
-    print("The result of the ", operation, " operation is: ", result);
+    printf("The result of the {s} operation is: {f}", operation, result);
   }
   return 0;
 }

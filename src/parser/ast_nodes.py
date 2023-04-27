@@ -206,7 +206,7 @@ class TypeNameNode(Node):
                 self.ttype = TypeName.VOID
             case _:
                 self.ttype = None
-        assert self.ttype is not None, "Invalid type name specified. Types names must be Double, Int, String or Void"
+        assert self.ttype is not None, f"Line:{type_id.line}, Column:{type_id.column}, Invalid type name specified. Types names must be Double, Int, String or Void"
 
     def reprJSON(self):
         return {"node": self.__class__.__name__, "type name": self.ttype}

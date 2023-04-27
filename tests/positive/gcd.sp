@@ -1,8 +1,10 @@
 (* GCD and LCM in sPLash *)
 
-get_input: Void ();
+get_input: Int ();
 
 print: Void (str: String);
+
+int: Int (n: Double);
 
 (* Function to calculate the GCD of two numbers *)
 gcd: Int (a: Int where a > 0, b: Int where b > 0) {
@@ -14,7 +16,7 @@ gcd: Int (a: Int where a > 0, b: Int where b > 0) {
 
 (* Function to calculate the LCM of two numbers *)
 lcm: Int (a: Int where a > 0, b: Int where b > 0) {
-  return a * b / gcd(a, b);
+  return int(a * b / gcd(a, b));
 }
 
 (* Function to read an integer value from the user *)

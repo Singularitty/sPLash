@@ -7,6 +7,16 @@ class TypeName(str, Enum):
     STRING = "String"
     VOID = "Void"
 
+    def __str__(self) -> str:
+        if self.value == TypeName.DOUBLE:
+            return "Double"
+        if self.value == TypeName.INT:
+            return "Int"
+        if self.value == TypeName.STRING:
+            return "String"
+        if self.value == TypeName.VOID:
+            return "Void"
+
 class Refinement:
     pass
 

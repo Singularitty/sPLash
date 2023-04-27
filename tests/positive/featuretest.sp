@@ -1,12 +1,23 @@
 (* Testing all the features of sPLash *)
 
+
+(* Function declarations *)
+len: Int (array: [Int]);
+print: Void (value: Int);
+RandomInt: Int();
+write_to_array: Void (array: [Int], index: Int, Value: Int);
+alocate_array: [Int] (size: Int);
+string_compare: Int (str1: String, str2: String);
+int: Int (n: Double);
+
+
+function1 : Void ();
+function2 : Int (a : String, b : Int, c : Double where c < -0.5);
+
 (* Variable Declarations *)
 global_1 : Int;
 REFINEDGLOBAL : [Int] where len(REFINEDGLOBAL) > 1;
 
-(* Function Declarations *)
-function1 : Void ();
-function2 : Int (a : String, b : Char, c : Double where c < -0.5);
 
 (* Value definition *)
 global_value : Int = 10;
@@ -35,12 +46,12 @@ unlock : Int () {
     }
 }
 
-CriticalSection : Void (shared_memory : [Int], task : String where ((task == "read") || (task == "write"))) {
+CriticalSection : Void (shared_memory : [Int], task : String) {
     (* Local Variable Declarations *)
     n : Int where n > 0 = len(shared_memory);
     i : Int where i > 0 = 0;
     (* If statement *)
-    if task == "read" {
+    if string_compare(task, "read") {
         (* While statement *)
         while i < n {
             print(shared_memory[i]);
@@ -58,17 +69,17 @@ CriticalSection : Void (shared_memory : [Int], task : String where ((task == "re
 
 main : Int () {
 
-	buffer : [Int] = alocate_array(Int, 100);
+	buffer : [Int] = alocate_array(100);
 
     while true {
         (* some binary operations *)
-        b = 1 + 2;
-        c = b / 3;
-        d = c % 4.0;
-        f = d - 0.5;
+        b:Int = 1 + 2;
+        c:Double = b / 3;
+        d:Int = int(c) % int(4.0);
+        f:Double = d - 0.5;
         (* Using the _ notation for an int *)
-        h = -1 + 2_232_2398_2_3;
-        flag = h < f;
+        h: Int = -1 + 2_232_2398_2_3;
+        flag: Int = h < f;
         flag = flag || (f > c);
         flag = flag && (b <= d);
         flag = flag == (c >= d);

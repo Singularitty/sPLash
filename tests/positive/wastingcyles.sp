@@ -1,8 +1,10 @@
 (* Some random functions *)
 
+print: Void (content: String);
+int: Int (n: Double);
 
 (* This function never ends *)
-f1 : Float (b: Float where b < -10 && b > -11) {
+f1 : Double (b: Double where b < -10 && b > -11) {
     if b > (* Comment in the middle of a binary operation *) -10 {
         b = b - 1;
         f1(b);
@@ -13,19 +15,22 @@ f1 : Float (b: Float where b < -10 && b > -11) {
 }
 
 (* Friendly warning *)
-warning : void () {
+warning : Void () {
     print("You should never call f1.");
 }
 
 (* Safety off *)
-safety : Bool = false;
+safety : Int = false;
 
-(* I am out of ideas for programs, sorry *)
-gibirish : string (n : Int where n % 1 == 0) {
-    random_int = 1013;
+
+gibirish : String (n : Int where n % 1 == 0) {
+    random_int: Int = 1013;
+    a: Int = 0;
+    b: Int = 0;
+    c: Int = 0;
     if random_int % 2 == 0 {
         return "whoa";
-    } if random_int / 3 == 123 - 321 * 100 {
+    } if int(random_int / 3) == 123 - 321 * 100 {
         return "there";
     } if random_int * 5 == 10 % 2 {
         return "hello";
@@ -43,10 +48,10 @@ gibirish : string (n : Int where n % 1 == 0) {
     return "?";
 }
 
-main : int () {
+main : Int () {
     (* Double not *)
     warning();
-    if !!satety {
+    if !!safety {
         gibirish(123123);
     } else {
         f1(-10);
