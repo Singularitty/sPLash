@@ -14,7 +14,7 @@ class Context(object):
         self.stack = [{}]
         self.errors = errors
 
-    def get_type(self, name: str, node) -> TypeName | ArrayType:
+    def get_type(self, name: str, node) -> TypeName or ArrayType:
         """
         Retrieves the type associated with the given name from the context's stack.
         Node parameter is just used for error messages
@@ -24,7 +24,7 @@ class Context(object):
                 return scope[name]
         raise TypeError(f"Line:{node.line}, Column:{node.column}, Identifier {name} is not in the context")
 
-    def set_type(self, name: str, value: TypeName | ArrayType) -> None:
+    def set_type(self, name: str, value: TypeName or ArrayType) -> None:
         """
         Sets the type for the given name in the current scope.
         """
@@ -284,10 +284,10 @@ class TypeChecker:
                         exp2_type = self.verify(node.expr2)
                         if exp1_type not in expected_type:
                             self.errors.append(TypeError(
-                                f"Line:{node.line}, Column:{node.column}: Expected type for the first operand should be either int or double, got {exp1_type}"))
+                                f"Line:{node.line}, Column:{node.column}: Expected type for the first operand should be either Int or Double, got {exp1_type}"))
                         if exp2_type not in expected_type:
                             self.errors.append(TypeError(
-                                f"Line:{node.line}, Column:{node.column}: Expected type for the second operand should be either int or double, got {exp2_type}"))
+                                f"Line:{node.line}, Column:{node.column}: Expected type for the second operand should be either Int or Double, got {exp2_type}"))
                         # Allows operations with Int and Double, but always returns Double
                         if exp1_type == TypeName.DOUBLE or exp2_type == TypeName.DOUBLE:
                             return TypeName.DOUBLE
@@ -298,10 +298,10 @@ class TypeChecker:
                         exp2_type = self.verify(node.expr2)
                         if exp1_type not in expected_type:
                             self.errors.append(TypeError(
-                                f"Line:{node.line}, Column:{node.column}: Expected type for the first operand should be either int or double, got {exp1_type}"))
+                                f"Line:{node.line}, Column:{node.column}: Expected type for the first operand should be either Int or Double, got {exp1_type}"))
                         if exp2_type not in expected_type:
                             self.errors.append(TypeError(
-                                f"Line:{node.line}, Column:{node.column}: Expected type for the second operand should be either int or double, got {exp2_type}"))
+                                f"Line:{node.line}, Column:{node.column}: Expected type for the second operand should be either Int or Double, got {exp2_type}"))
                         return TypeName.DOUBLE
                     case BinaryOperator.EQ | BinaryOperator.NEQ | BinaryOperator.GE | BinaryOperator.GT | BinaryOperator.LE | BinaryOperator.LT:
                         expected_type = [TypeName.INT, TypeName.DOUBLE]
@@ -309,10 +309,10 @@ class TypeChecker:
                         exp2_type = self.verify(node.expr2)
                         if exp1_type not in expected_type:
                             self.errors.append(TypeError(
-                                f"Line:{node.line}, Column:{node.column}: Expected type for the first operand should be either int or double, got {exp1_type}"))
+                                f"Line:{node.line}, Column:{node.column}: Expected type for the first operand should be Int or Double, got {exp1_type}"))
                         if exp2_type not in expected_type:
                             self.errors.append(TypeError(
-                                f"Line:{node.line}, Column:{node.column}: Expected type for the second operand should be either int or double, got {exp2_type}"))
+                                f"Line:{node.line}, Column:{node.column}: Expected type for the second operand should be Int or Double, got {exp2_type}"))
                         return TypeName.INT
                     case BinaryOperator.AND | BinaryOperator.OR | BinaryOperator.MOD:
                         expected_type = TypeName.INT
@@ -320,10 +320,10 @@ class TypeChecker:
                         exp2_type = self.verify(node.expr2)
                         if exp1_type != expected_type:
                             self.errors.append(TypeError(
-                                f"Line:{node.line}, Column:{node.column}: Expected type for the first operand should be either int or double, got {exp1_type}"))
+                                f"Line:{node.line}, Column:{node.column}: Expected type for the first operand should be Int, got {exp1_type}"))
                         if exp2_type != expected_type:
                             self.errors.append(TypeError(
-                                f"Line:{node.line}, Column:{node.column}: Expected type for the second operand should be either int or double, got {exp2_type}"))
+                                f"Line:{node.line}, Column:{node.column}: Expected type for the second operand should be Int, got {exp2_type}"))
                         return TypeName.INT
 
             case UnaryExprNode():
@@ -334,7 +334,7 @@ class TypeChecker:
                         expression_type = self.verify(node.expr)
                         if expression_type != expected_type:
                             self.errors.append(TypeError(
-                                f"Line:{node.line}, Column:{node.column}: Expected type for operand should be either int, got {expression_type}"))
+                                f"Line:{node.line}, Column:{node.column}: Expected type for operand should be Int, got {expression_type}"))
                         return TypeName.INT
 
             case IndexAccessExprNode():

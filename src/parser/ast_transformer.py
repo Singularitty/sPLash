@@ -179,8 +179,7 @@ class AstTransformer(Transformer):
     def block(self, items) -> BlockNode:
         if len(items) > 0:
             return BlockNode(items[0].line, items[0].column, items)
-        else:
-            return BlockNode(items[1].line, items[1].column, [])
+        raise AssertionError("Blocks cannot be empty")
 
     ### Statements - Assignments
 

@@ -10,6 +10,7 @@ alocate_array: [Int] (size: Int);
 string_compare: Int (str1: String, str2: String);
 int: Int (n: Double);
 
+matrix: [[Int]] (lines: Int, Columns: Int);
 
 function1 : Void ();
 function2 : Int (a : String, b : Int, c : Double where c < -0.5);
@@ -70,6 +71,12 @@ CriticalSection : Void (shared_memory : [Int], task : String) {
 main : Int () {
 
 	buffer : [Int] = alocate_array(100);
+
+    two_dimension_array: [[Int]] = matrix(10,10);
+
+    colum: [Int] = two_dimension_array[0];
+
+    value: Int = colum[0];
 
     while true {
         (* some binary operations *)

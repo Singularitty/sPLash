@@ -35,7 +35,7 @@ def main():
 
     # initiate parser with sPLash grammar
     parser = Lark.open(LARK_FILE_PATH)
-
+    
     # parse program
     tree = parser.parse(program)
 
@@ -57,6 +57,7 @@ def main():
         for err in tp.errors:
             print(err)
         sys.exit(4)
+
 
 if __name__ == "__main__":
     main()

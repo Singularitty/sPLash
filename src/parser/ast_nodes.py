@@ -213,7 +213,7 @@ class TypeNameNode(Node):
 
 
 class TypeNode(Node):
-    def __init__(self, line: int, column: int, node: TypeNameNode | ArrayTypeNode, refinement: str | None) -> None:
+    def __init__(self, line: int, column: int, node: TypeNameNode or ArrayTypeNode, refinement: str or None) -> None:
         super().__init__(line, column)
         self.ttype = node.ttype
         self.refinement = refinement
@@ -277,6 +277,7 @@ class StmtNode(Node):
 class BlockNode(Node):
     def __init__(self, line: int, column: int, statements: List[StmtNode]) -> None:
         super().__init__(line, column)
+        assert len(statements) > 0
         assert all(isinstance(n, StmtNode) for n in statements)
         self.statements = statements
 
