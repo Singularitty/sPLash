@@ -11,6 +11,7 @@ fi
 apt update;
 apt -y install python3.10;
 apt -y install python3.10-venv python3-pip;
+apt -y install llvm
 
 # Create virtual environment to install dependencies to it
 python3.10 -m venv env

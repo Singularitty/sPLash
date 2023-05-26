@@ -1,0 +1,5 @@
+GCD and LCM of 15 and 25
+GCD:
+5
+LCM:
+75.000000

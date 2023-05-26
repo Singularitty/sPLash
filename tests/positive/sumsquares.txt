@@ -1,0 +1,2 @@
+The sum of the squares of the first 5 natural numbers is
+55

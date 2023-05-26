@@ -1,37 +1,39 @@
 (* GCD and LCM in sPLash *)
 
-get_input: Int ();
-
-print: Void (str: String);
-
-int: Int (n: Double);
+print_string: Void (str: String);
+print_int: Void (n: Int);
+print_double: Void (n: Double);
 
 (* Function to calculate the GCD of two numbers *)
 gcd: Int (a: Int where a > 0, b: Int where b > 0) {
+  result: Int = 0;
   if b == 0 {
-    return a;
+    result = a;
+  } else {
+    result = gcd(b, a % b);
   }
-  return gcd(b, a % b);
+  return result;
 }
 
 (* Function to calculate the LCM of two numbers *)
-lcm: Int (a: Int where a > 0, b: Int where b > 0) {
-  return int(a * b / gcd(a, b));
-}
+lcm: Double (a: Int where a > 0, b: Int where b > 0) {
+    return (a * b) / gcd(a, b);
 
-(* Function to read an integer value from the user *)
-read_int: Int (prompt: String) {
-  print(prompt);
-  value: Int = get_input();
-  return value;
 }
 
 main: Int () {
-  num1: Int = read_int("Enter the first number: ");
-  num2: Int = read_int("Enter the second number: ");
+  num1: Int = 15;
+  num2: Int = 25;
 
   result_gcd: Int = gcd(num1, num2);
-  result_lcm: Int = lcm(num1, num2);
+  result_lcm: Double = lcm(num1, num2);
+
+  print_string("GCD and LCM of 15 and 25");
+
+  print_string("GCD:");
+  print_int(result_gcd);
+  print_string("LCM:");
+  print_double(result_lcm);
 
   return 0;
 }

@@ -4,6 +4,7 @@ from lark import Lark
 from parser.ast_transformer import AstTransformer
 from parser.ast_nodes import ComplexEncoder
 from typechecker.typechecker import *
+from codegenerator.codegen import compile
 
 LARK_FILE_PATH = "src/parser/sPLash.lark"
 
@@ -37,7 +38,12 @@ def main():
     parser = Lark.open(LARK_FILE_PATH)
     
     # parse program
-    tree = parser.parse(program)
+    try:
+        tree = parser.parse(program)
+    except Exception as e:
+        print(e)
+        sys.exit(1)
+        
 
     # create ast
     ast: ProgramNode = AstTransformer().transform(tree)
@@ -45,18 +51,27 @@ def main():
     # print ast in JSON format
     if print_ast:
         print(json.dumps(ast, cls=ComplexEncoder, indent=2))
+    else:
 
-    # Type check
-    try:
-        tp = TypeChecker(ast)
-    except TypeError as err:
-        raise sys.exit(err)
+        # Type check
+        try:
+            tp = TypeChecker(ast)
+        except TypeError as err:
+            raise sys.exit(err)
 
-    if not tp.valid:
-        print("Type Checking Failed!\nErrors:")
-        for err in tp.errors:
-            print(err)
-        sys.exit(4)
+        if not tp.valid:
+            print("Type Checking Failed!\nErrors:")
+            for err in tp.errors:
+                print(err)
+            sys.exit(4)
+        
+        try:
+            llvm = compile(ast)
+            with open(file_path[:-2] + "ll", "w") as llvm_out:
+                llvm_out.write(llvm)
+        except IOError as e:
+            print(e)
+            sys.exit(3)
 
 
 if __name__ == "__main__":

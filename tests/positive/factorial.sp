@@ -1,20 +1,23 @@
 (* Factorial in sPLash *)
 
-printf: Void (format : String, arg: String);
+print_string: Void (str: String);
+print_int: Void (n : Int);
 
-toString: String (i: Int);
-
+(* Function to calculate the factorial of a number *)
 factorial: Int (n: Int where n >= 0) {
-  if n == 0 {
-    return 1;
+  result: Int = 1;
+  i: Int = 1;
+  while i <= n {
+    result = result * i;
+    i = i + 1;
   }
-  return n * factorial(n - 1);
+  return result;
 }
 
 main: Int () {
   num: Int = 5;
   fact: Int = factorial(num);
-  result: String = toString(fact);
-  printf("Factorial of is", result);
+  print_string("Factorial of 5 is:");
+  print_int(fact);
   return 0;
 }

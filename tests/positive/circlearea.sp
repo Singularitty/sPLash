@@ -1,9 +1,8 @@
 (* Calculate the area of a cirlce in sPLash *)
 
 
-printf: Void (format: String, arg1: Double, arg2: Double);
-
-get_input: Int ();
+print_string: Void (str: String);
+print_double: Void (n : Double);
 
 PI : Double = 3.14159265359;
 
@@ -16,8 +15,9 @@ CircleArea : Double (radius : Double where radius > 0.0) {
 }
 
 main : Int () {
-	r : Double where r > 0 = get_input();
+	r : Double where r > 0 = 5;
 	area : Double = CircleArea(r);
-	printf("Area of a cirle of radius {f} is {f} ", r, area);
+	print_string("The are of a circle with 5 radius is:");
+	print_double(area);
 	return 0;
 }

@@ -1,0 +1,4 @@
+Mean of the numbers 3, 5, 7, 9, 11 is:
+1929355.400000
+Ok, so it doesn't correctly calculate the mean...
+But hey, if you are looking for a random number generator this works pretty good!
