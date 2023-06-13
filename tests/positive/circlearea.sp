@@ -10,7 +10,7 @@ Square : Double (n : Double) {
 	return n*n;
 }
 
-CircleArea : Double (radius : Double where radius > 0.0) {
+CircleArea : Double (radius : Double where radius > 0) {
 	return PI * Square(radius);
 }
 

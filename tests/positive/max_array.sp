@@ -3,10 +3,10 @@
 print_string: Void (str: String);
 print_int: Void (n: Int);
 
-create_array_int: [Int] (size: Int);
-write_to_array_int: Void (array: [Int], index: Int, value: Int);
+create_array_int: [Int] (size: Int where size > 0);
+write_to_array_int: Void (array: [Int], index: Int where index >= 0, value: Int);
 
-find_maximum: Int (array: [Int], size: Int) {
+find_maximum: Int (array: [Int], size: Int where size > 0) {
   max: Int = array[0];
   i: Int = 1;
 
@@ -22,10 +22,10 @@ find_maximum: Int (array: [Int], size: Int) {
 
 main: Int () {
   
-  array_size:Int = 5;
+  array_size:Int where array_size == 5 = 5;
   numbers:[Int] = create_array_int(array_size);
-  value: Int = 3;
-  i: Int = 0;
+  value: Int where value > 0 = 3;
+  i: Int where i + 1 > 0 = 0;
   while value < 5 {
     write_to_array_int(numbers, i, value);
     i = i + 1;

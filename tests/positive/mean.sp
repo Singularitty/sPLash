@@ -2,13 +2,13 @@
 
 print_string: Void (str: String);
 print_double: Void (n: Double);
-create_array_int: [Int] (size: Int);
-write_to_array_int: Void (array: [Int], index: Int, value: Int);
+create_array_int: [Int] (size: Int where size > 0);
+write_to_array_int: Void (array: [Int], index: Int where index >= 0, value: Int);
 
 sqrt: Double (n: Double);
 
 
-mean:Double (arr:[Int], size:Int) {
+mean:Double (arr:[Int], size:Int where size > 0) {
   sum:Int = 0;
   i: Int = 0;
   while i < size {
@@ -21,7 +21,7 @@ mean:Double (arr:[Int], size:Int) {
 
 
 main: Int () {
-  array_size:Int = 5;
+  array_size:Int where array_size > 0 = 5;
   numbers:[Int] = create_array_int(array_size);
   value: Int = 3;
   i: Int = 0;

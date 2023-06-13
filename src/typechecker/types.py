@@ -17,10 +17,6 @@ class TypeName(str, Enum):
         if self.value == TypeName.VOID:
             return "Void"
 
-class Refinement:
-    pass
-
-
 @dataclass
 class ArrayType():
     type_name: TypeName
@@ -45,3 +41,28 @@ class ArrayType():
 
 class TypeError(Exception):
     pass
+
+class LiquidType:
+    
+    def __init__(self, var: str, ttype: TypeName or ArrayType, refinement = None):
+        self.var = var
+        self.ttype = ttype
+        self.refinement = refinement
+        
+    def is_refined(self) -> bool:
+        return self.refinement is not None
+    
+    def __eq__(self, __value: object) -> bool:
+        if not isinstance(__value, LiquidType):
+            return False
+        if self.ttype != __value.ttype:
+            return False
+        if self.refinement != __value.refinement:
+            return False
+        return True
+    
+    def __str__(self) -> str:
+        if self.is_refined():
+            return "{" + f"{self.var}: {self.ttype} | {self.refinement}" + "}"
+        else:
+            return str(self.ttype)
