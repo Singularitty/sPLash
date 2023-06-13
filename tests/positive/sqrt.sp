@@ -14,7 +14,7 @@ abs: Double (x: Double) {
 }
 
 (* Function to calculate the square root of a number using the Babylonian method *)
-sqrt: Double (n: Double) {
+sqrt: Double (n: Double where n >= 1) {
   guess: Double = n / 2.0;
   epsilon: Double = 0.001;
   while abs(guess * guess - n) >= epsilon {
@@ -24,7 +24,7 @@ sqrt: Double (n: Double) {
 }
 
 main: Int () {
-  number: Double = 25.0;
+  number: Double where number >= 1 = 25.0;
   sqrt_number: Double = sqrt(number);
   print_string("The square root of 25 is:");
   print_double(sqrt_number);

@@ -22,8 +22,8 @@ lcm: Double (a: Int where a > 0, b: Int where b > 0) {
 }
 
 main: Int () {
-  num1: Int = 15;
-  num2: Int = 25;
+  num1: Int where num1 >= 15 = 15;
+  num2: Int where num2 >= 25 = 25;
 
   result_gcd: Int = gcd(num1, num2);
   result_lcm: Double = lcm(num1, num2);

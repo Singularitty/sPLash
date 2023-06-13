@@ -21,7 +21,7 @@ fibonacci: Int (n: Int where n >= 0) {
 }
 
 main: Int () {
-  num_terms: Int = 25;
+  num_terms: Int where num_terms > 0 = 25;
   print_string("Fibonacci sequence:");
   fibonacci(num_terms);
   return 0;

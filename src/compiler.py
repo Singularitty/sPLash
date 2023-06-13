@@ -17,7 +17,7 @@ def main():
     # file_path should always be last argument of argv
     file_path = sys.argv[-1]
 
-    # splash bash script never ignores extra arguments, so no need to check for other cases
+    # splash bash script ignores extra arguments, so no need to check for other cases
     if len(sys.argv) == 3 and sys.argv[1] == "--tree":
         print_ast = True
 

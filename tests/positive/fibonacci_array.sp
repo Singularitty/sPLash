@@ -22,7 +22,7 @@ fibonacci: Int (n: Int where n >= 0) {
 }
 
 (* Function to fill an array with Fibonacci numbers *)
-fill_fibonacci: Void (arr: [Int], n: Int) {
+fill_fibonacci: Void (arr: [Int], n: Int where n >= 1) {
   i: Int = 0;
   while i < n {
     write_to_array_int(arr, i, fibonacci(i));
@@ -31,7 +31,7 @@ fill_fibonacci: Void (arr: [Int], n: Int) {
 }
 
 (* Function to print an array of integers *)
-print_array: Void (arr: [Int], n: Int) {
+print_array: Void (arr: [Int], n: Int where n >= 0) {
   i: Int = 0;
   while i < n {
     print_int(arr[i]);
@@ -40,7 +40,7 @@ print_array: Void (arr: [Int], n: Int) {
 }
 
 main: Int () {
-  num_terms: Int = 11;
+  num_terms: Int where num_terms > 0 = 11;
   fib_sequence: [Int] = create_array_int(num_terms);
 
   fill_fibonacci(fib_sequence, num_terms);

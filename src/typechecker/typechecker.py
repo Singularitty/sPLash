@@ -1,6 +1,6 @@
 from parser.ast_nodes import *
 from .types import *
-
+from .liquidtypechecker import check_refinement
 
 class Context(object):
     """
@@ -14,7 +14,7 @@ class Context(object):
         self.stack = [{}]
         self.errors = errors
 
-    def get_type(self, name: str, node) -> TypeName or ArrayType:
+    def get_type(self, name: str, node) -> LiquidType:
         """
         Retrieves the type associated with the given name from the context's stack.
         Node parameter is just used for error messages
@@ -24,12 +24,12 @@ class Context(object):
                 return scope[name]
         raise TypeError(f"Line:{node.line}, Column:{node.column}, Identifier {name} is not in the context")
 
-    def set_type(self, name: str, value: TypeName or ArrayType) -> None:
+    def set_type(self, name: str, ttype: LiquidType) -> None:
         """
         Sets the type for the given name in the current scope.
         """
         scope = self.stack[0]
-        scope[name] = value
+        scope[name] = ttype
 
     def has_identifier(self, name: str) -> bool:
         """
@@ -58,6 +58,46 @@ class Context(object):
         """
         self.stack.pop(0)
 
+def subtype(type1 : LiquidType, type2 : LiquidType, Ctx: Context) -> bool:
+    """Checks if type1 is a subtype of type2
+    
+    For primitive types, only Int is a subtype of Double:
+        
+        Int <: Double
+        
+    We then have the following subtyping relations:
+    
+        T <: T, forall T
+    
+        {x:T | p} <: T, forall T
+        
+    When both types are refined, we check the constraints.
+    """
+    
+    if type1.is_refined() and not type2.is_refined():
+        # {x:T | p} <: T, forall T
+        if type1.ttype == type2.ttype:
+            return True
+        # {x:T | p} <: U, forall T <: U
+        elif type1.ttype == TypeName.INT and type2.ttype == TypeName.DOUBLE:
+            return True
+        
+    elif type1.is_refined() and type2.is_refined():
+        if type1.ttype == type2.ttype:
+            return check_refinement(type1, type2, Ctx)
+        
+        if type1.ttype == TypeName.INT and type2.ttype == TypeName.DOUBLE:
+            return check_refinement(type1, type2, Ctx)
+    
+    else:
+        # T <: T for all T
+        if type1.ttype == type2.ttype:
+            return True
+        # Int <: Double
+        elif type1.ttype == TypeName.INT and type2.ttype == TypeName.DOUBLE:
+            return True
+        
+    return False
 
 class TypeChecker:
     """
@@ -115,18 +155,19 @@ class TypeChecker:
         match node:
             case FunctionDefinitionNode():
                 # Start by adding function signature to the context if it wasn't declared previously
-                return_type = node.type_.ttype
                 params = node.parameters
                 fname = node.func_id.identifier
+                return_type = LiquidType(fname, node.type_.ttype, node.type_.refinement)
                 if not self.ctx.has_identifier(fname):
-                    signature = (return_type, [x[1].ttype for x in params])
+                    signature = (return_type, [LiquidType(x[0].identifier, x[1].ttype, x[1].refinement) for x in params])
                     self.ctx.set_type(node.func_id.identifier, signature)
                 # Now begin typchecking function body
                 self.ctx.enter_scope()
                 # Use return code to typecheck the return statement when we get to it
                 self.ctx.set_type(self.RETURN_CODE, return_type)
                 for (id_node, type_node) in params:
-                    self.ctx.set_type(id_node.identifier, type_node.ttype)
+                    p_type = LiquidType(id_node.identifier, type_node.ttype, type_node.refinement)
+                    self.ctx.set_type(id_node.identifier, p_type)
                 self.ctx.enter_scope()
                 for statement in node.body.statements:
                     self.verify(statement)
@@ -134,16 +175,15 @@ class TypeChecker:
                 self.ctx.exit_scope()
             case ValueDefinitionNode():
                 name = node.var_id.identifier
-                expected_type = node.type_.ttype
+                expected_type = LiquidType(name, node.type_.ttype, node.type_.refinement)
                 if self.ctx.has_identifier_in_current_scope(name):
                     self.errors.append(TypeError(
                         f"Line:{node.line}, Column:{node.column}: Variable {name} is already defined in the context"))
-                self.ctx.set_type(name, expected_type)
                 returned_type = self.verify(node.expr)
-                if not (expected_type == TypeName.DOUBLE and returned_type == TypeName.INT):
-                    if returned_type != expected_type:
-                        self.errors.append(TypeError(
-                            f"Line:{node.line}, Column:{node.column}: Expected a value of type {expected_type}, got {returned_type} instead"))
+                if not subtype(returned_type, expected_type, self.ctx):
+                    self.errors.append(TypeError(
+                        f"Line:{node.line}, Column:{node.column}: Expected a value of type {expected_type}, got {returned_type} instead"))
+                self.ctx.set_type(name, expected_type)
 
     def __verify_statement(self, node: StmtNode):
         match node:
@@ -152,8 +192,8 @@ class TypeChecker:
                 if self.ctx.has_identifier_in_current_scope(name):
                     self.errors.append(TypeError(
                         f"Line:{node.line}, Column:{node.column}: Variable {name} is already in the context"))
-                ttype = node.type_.ttype
-                self.ctx.set_type(name, ttype)
+                var_type = LiquidType(name, node.type_.ttype, node.type_.refinement)
+                self.ctx.set_type(name, var_type)
 
             case VariableAssignmentStmtNode():
                 name = node.var_id.identifier
@@ -164,10 +204,9 @@ class TypeChecker:
                 expected_type = self.ctx.get_type(name, node)
                 returned_type = self.verify(assigned_expr)
                 # Allows the assignemnt of a Int to a Double variable, the Int is casted to a Double
-                if not (expected_type == TypeName.DOUBLE and returned_type == TypeName.INT):
-                    if returned_type != expected_type:
-                        self.errors.append(TypeError(
-                            f"Line:{node.line}, Column:{node.column}: Expected assigned value to be of tpye {expected_type}, got {returned_type}"))
+                if not subtype(returned_type, expected_type, self.ctx):
+                    self.errors.append(TypeError(
+                        f"Line:{node.line}, Column:{node.column}: Expected assigned value to be of tpye {expected_type}, got {returned_type}"))
 
             case ExprStmtNode():
                 self.verify(node.expr)
@@ -175,13 +214,13 @@ class TypeChecker:
             case ReturnStmtNode():
                 return_type = self.verify(node.return_expr)
                 expected_return = self.ctx.get_type(self.RETURN_CODE, node)
-                if return_type != expected_return:
+                if not subtype(return_type, expected_return, self.ctx):
                     self.errors.append(TypeError(
                         f"Line:{node.line}, Column:{node.column}: Expected return expression of type {expected_return}, got {return_type} instead"))
 
             case IfStmtNode():
                 cond_type = self.verify(node.conditional)
-                if cond_type != TypeName.INT:
+                if not subtype(cond_type, LiquidType(None, TypeName.INT, None), self.ctx):
                     self.errors.append(TypeError(
                         f"Line:{node.line}, Column:{node.column}: Condition on if statement must be of type Int and have value 0 or 1, got {cond_type} instead"))
                 self.ctx.enter_scope()
@@ -197,7 +236,7 @@ class TypeChecker:
             case WhileStmtNode():
                 guard = node.guard
                 guard_type = self.verify(guard)
-                if guard_type != TypeName.INT:
+                if not subtype(guard_type, LiquidType(None, TypeName.INT, None), self.ctx):
                     self.errors.append(TypeError(
                         f"Line:{node.line}, Column:{node.column}: Guard on while statement must be of type Int and have value 0 or 1, go {guard_type} instead"))
                 self.ctx.enter_scope()
@@ -207,17 +246,16 @@ class TypeChecker:
 
             case LocalValueDefinitionNode():
                 name = node.var_id.identifier
-                expected_type = node.type_.ttype
+                expected_type = LiquidType(name, node.type_.ttype, node.type_.refinement)
                 if self.ctx.has_identifier_in_current_scope(name):
                     self.errors.append(TypeError(
                         f"Line:{node.line}, Column:{node.column}: Variable {name} is already defined in the context"))
-                self.ctx.set_type(name, expected_type)
                 returned_type = self.verify(node.expr)
                 # Allows the assignemnt of a Int to a Double variable, the Int is casted to a Double
-                if not (expected_type == TypeName.DOUBLE and returned_type == TypeName.INT):
-                    if returned_type != expected_type:
+                if not subtype(returned_type, expected_type, self.ctx):
                         self.errors.append(TypeError(
                             f"Line:{node.line}, Column:{node.column}: Expected a value of type {expected_type}, got {returned_type} instead"))
+                self.ctx.set_type(name, expected_type)
 
     def __verify_declaration(self, node: DeclarationNode):
         match node:
@@ -226,30 +264,28 @@ class TypeChecker:
                 if self.ctx.has_identifier(name):
                     self.errors.append(TypeError(
                         f"Line:{node.line}, Column:{node.column}: Function {name} was alread declared or defined in the context"))
-                f_type = node.type_.ttype
-                parameters_type = []
-                for (_, type_node) in node.parameters:
-                    parameters_type.append(type_node.ttype)
-                signature = (f_type, parameters_type)
+                return_type = LiquidType(name, node.type_.ttype, node.type_.refinement)
+                parameters_type = [LiquidType(x[0].identifier, x[1].ttype, x[1].refinement) for x in node.parameters]
+                signature = (return_type, parameters_type)
                 self.ctx.set_type(name, signature)
             case VariableDeclarationNode():
                 name = node.var_id.identifier
                 if self.ctx.has_identifier_in_current_scope(node.var_id):
                     self.errors.append(TypeError(
                         f"Line:{node.line}, Column:{node.column}: Variable {node.var_id} is already in the context"))
-                ttype = node.type_.ttype
-                self.ctx.set_type(name, ttype)
+                var_type = LiquidType(name, node.type_.ttype, node.type_.refinement)
+                self.ctx.set_type(name, var_type)
 
     def __verify_expression(self, node: ExprNode):
         match node:
             case IntLiteralExprNode():
-                return TypeName.INT
+                return LiquidType(None, TypeName.INT, None)
             case FloatLiteralExprNode():
-                return TypeName.DOUBLE
+                return LiquidType(None, TypeName.DOUBLE, None)
             case BoolLiteralExprNode():
-                return TypeName.INT
+                return LiquidType(None, TypeName.INT, None)
             case StrExprNode():
-                return TypeName.STRING
+                return LiquidType(None, TypeName.STRING, None)
 
             case IdentifierExprNode():
                 name = node.identifier
@@ -267,80 +303,76 @@ class TypeChecker:
                         f"Line:{node.line}, Column:{node.column}: {fname} expected {len(parameter_types)} arguments, got {len(args)} instead"))
                 for (i, (arg, par_type)) in enumerate(zip(args, parameter_types)):
                     arg_type = self.verify(arg)
-                    # Allows to call functions that take doubles with ints
-                    if not (arg_type == TypeName.INT and par_type == TypeName.DOUBLE):
-                        if arg_type != par_type:
-                            index = i+1
-                            self.errors.append(TypeError(
-                                f"Line:{node.line}, Column:{node.column}: Expected {par_type} for argument #{index}, got {arg_type} instead."))
+                    if not subtype(arg_type, par_type, self.ctx):
+                        index = i+1
+                        self.errors.append(TypeError(
+                            f"Line:{node.line}, Column:{node.column}: Expected {par_type} for argument #{index}, got {arg_type} instead."))
                 return expected_return
 
             case BinaryExprNode():
                 operator = node.operator
                 match operator:
                     case BinaryOperator.PLUS | BinaryOperator.MINUS | BinaryOperator.MUL:
-                        expected_type = [TypeName.INT, TypeName.DOUBLE]
                         exp1_type = self.verify(node.expr1)
                         exp2_type = self.verify(node.expr2)
-                        if exp1_type not in expected_type:
+                        if not subtype(exp1_type, LiquidType(None, TypeName.DOUBLE, None), self.ctx):
                             self.errors.append(TypeError(
                                 f"Line:{node.line}, Column:{node.column}: Expected type for the first operand should be either Int or Double, got {exp1_type}"))
-                        if exp2_type not in expected_type:
+                        if not subtype(exp2_type, LiquidType(None, TypeName.DOUBLE, None), self.ctx):
                             self.errors.append(TypeError(
                                 f"Line:{node.line}, Column:{node.column}: Expected type for the second operand should be either Int or Double, got {exp2_type}"))
                         # Allows operations with Int and Double, but always returns Double
-                        if exp1_type == TypeName.DOUBLE or exp2_type == TypeName.DOUBLE:
-                            return TypeName.DOUBLE
-                        return TypeName.INT
+                        if exp1_type.ttype == TypeName.DOUBLE or exp2_type.ttype == TypeName.DOUBLE:
+                            return LiquidType(None, TypeName.DOUBLE, None)
+                        return LiquidType(None, TypeName.INT, None)
+                    
                     case BinaryOperator.DIV:
-                        expected_type = [TypeName.INT, TypeName.DOUBLE]
                         exp1_type = self.verify(node.expr1)
                         exp2_type = self.verify(node.expr2)
-                        if exp1_type not in expected_type:
+                        if not subtype(exp1_type, LiquidType(None, TypeName.DOUBLE, None), self.ctx):
                             self.errors.append(TypeError(
                                 f"Line:{node.line}, Column:{node.column}: Expected type for the first operand should be either Int or Double, got {exp1_type}"))
-                        if exp2_type not in expected_type:
+                        if not subtype(exp2_type, LiquidType(None, TypeName.DOUBLE, None), self.ctx):
                             self.errors.append(TypeError(
                                 f"Line:{node.line}, Column:{node.column}: Expected type for the second operand should be either Int or Double, got {exp2_type}"))
-                        return TypeName.DOUBLE
+                        return LiquidType(None, TypeName.DOUBLE, None)
+                    
                     case BinaryOperator.EQ | BinaryOperator.NEQ | BinaryOperator.GE | BinaryOperator.GT | BinaryOperator.LE | BinaryOperator.LT:
-                        expected_type = [TypeName.INT, TypeName.DOUBLE]
                         exp1_type = self.verify(node.expr1)
                         exp2_type = self.verify(node.expr2)
-                        if exp1_type not in expected_type:
+                        if not subtype(exp1_type, LiquidType(None, TypeName.DOUBLE, None), self.ctx):
                             self.errors.append(TypeError(
                                 f"Line:{node.line}, Column:{node.column}: Expected type for the first operand should be Int or Double, got {exp1_type}"))
-                        if exp2_type not in expected_type:
+                        if not subtype(exp2_type, LiquidType(None, TypeName.DOUBLE, None), self.ctx):
                             self.errors.append(TypeError(
                                 f"Line:{node.line}, Column:{node.column}: Expected type for the second operand should be Int or Double, got {exp2_type}"))
-                        return TypeName.INT
+                        return LiquidType(None, TypeName.INT, None)
+                    
                     case BinaryOperator.AND | BinaryOperator.OR | BinaryOperator.MOD:
-                        expected_type = TypeName.INT
                         exp1_type = self.verify(node.expr1)
                         exp2_type = self.verify(node.expr2)
-                        if exp1_type != expected_type:
+                        if not subtype(exp1_type, LiquidType(None, TypeName.INT, None), self.ctx):
                             self.errors.append(TypeError(
                                 f"Line:{node.line}, Column:{node.column}: Expected type for the first operand should be Int, got {exp1_type}"))
-                        if exp2_type != expected_type:
+                        if not subtype(exp2_type, LiquidType(None, TypeName.INT, None), self.ctx):
                             self.errors.append(TypeError(
                                 f"Line:{node.line}, Column:{node.column}: Expected type for the second operand should be Int, got {exp2_type}"))
-                        return TypeName.INT
+                        return LiquidType(None, TypeName.INT, None)
 
             case UnaryExprNode():
                 operator = node.operator
                 match operator:
                     case UnaryOperator.NOT:
-                        expected_type = TypeName.INT
                         expression_type = self.verify(node.expr)
-                        if expression_type != expected_type:
+                        if not subtype(expression_type, LiquidType(None, TypeName.INT, None), self.ctx):
                             self.errors.append(TypeError(
                                 f"Line:{node.line}, Column:{node.column}: Expected type for operand should be Int, got {expression_type}"))
-                        return TypeName.INT
+                        return LiquidType(None, TypeName.INT, None)
 
             case IndexAccessExprNode():
                 expected_type = self.verify(node.array)
                 index_type = self.verify(node.index)
-                if index_type != TypeName.INT:
+                if not subtype(index_type, LiquidType(None, TypeName.INT, None), self.ctx):
                     self.errors.append(TypeError(
                         f"Line:{node.line}, Column:{node.column}: Expected Int type for array index got {index_type} instead"))
-                return expected_type.element_type()
+                return LiquidType(None, expected_type.ttype.element_type(), None)

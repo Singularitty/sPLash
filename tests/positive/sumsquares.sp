@@ -10,18 +10,18 @@ square: Int (n: Int) {
 }
 
 (* Function to calculate the sum of squares of first n natural numbers *)
-sum_of_squares: Int (n: Int where n >= 0, current_sum: Int) {
+sum_of_squares: Int (n: Int where n >= 0, current_sum: Int where current_sum >= 0) {
   result: Int = 0;
   if n == 0 {
     result = current_sum;
   } else {
-    result =sum_of_squares(n - 1, current_sum + square(n));
+    result = sum_of_squares(n - 1, current_sum + square(n));
   }
   return result;
 }
 
 main: Int () {
-  num: Int = 5;
+  num: Int where num >= 0 = 5;
   result: Int = sum_of_squares(num, 0);
   print_string("The sum of the squares of the first 5 natural numbers is");
   print_int(result);

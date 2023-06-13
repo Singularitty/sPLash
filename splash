@@ -32,6 +32,6 @@ if [[ $tree_flag -eq 1 ]]; then
   # If --tree flag is present, print the Abstract Syntax Tree as JSON
   python3.10 "$COMPILER_PATH" --tree "$input_file"
 else
-  # If --tree flag is not present, print any syntactic errors that exist or do nothing if correct
+  # If --tree flag is not present, print any syntactic errors that exist or emit llvm code if correct
   python3.10 "$COMPILER_PATH" "$input_file"
 fi

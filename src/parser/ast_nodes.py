@@ -3,7 +3,7 @@ from typing import List, Tuple
 from enum import Enum
 import json
 
-from typechecker.types import *
+from typechecker.types import TypeName, ArrayType
 
 
 class ComplexEncoder(json.JSONEncoder):
@@ -86,6 +86,8 @@ class IntLiteralExprNode(ExprNode):
     def reprJSON(self):
         return {"node": self.__class__.__name__, "sign": self.sign, "value": self.value}
 
+    def __str__(self) -> str:
+        return f"{self.value}"
 
 class FloatLiteralExprNode(ExprNode):
     def __init__(self, line: int, column: int, value: float) -> None:
@@ -96,6 +98,8 @@ class FloatLiteralExprNode(ExprNode):
     def reprJSON(self):
         return {"node": self.__class__.__name__, "sign": self.sign, "value": self.value}
 
+    def __str__(self) -> str:
+        return f"{self.value}"
 
 class BoolLiteralExprNode(ExprNode):
     def __init__(self, line: int, column: int, value: bool) -> None:
@@ -105,6 +109,8 @@ class BoolLiteralExprNode(ExprNode):
     def reprJSON(self):
         return {"node": self.__class__.__name__, "value": self.value}
 
+    def __str__(self) -> str:
+        return f"{self.value}"
 
 class StrExprNode(ExprNode):
     def __init__(self, line: int, column: int, value: str) -> None:
@@ -114,6 +120,8 @@ class StrExprNode(ExprNode):
     def reprJSON(self):
         return {"node": self.__class__.__name__, "value": self.value}
 
+    def __str__(self) -> str:
+        return f"{self.value}"
 
 class IdentifierExprNode(ExprNode):
     def __init__(self, line: int, column: int, identifier: str) -> None:
@@ -123,6 +131,8 @@ class IdentifierExprNode(ExprNode):
     def reprJSON(self):
         return {"node": self.__class__.__name__, "identifier": self.identifier}
 
+    def __str__(self) -> str:
+        return f"{self.identifier}"
 
 class FuncReturnExprNode(ExprNode):
     def __init__(self, line: int, column: int, func_id: IdentifierExprNode, arguments: List[ExprNode]) -> None:
@@ -134,6 +144,8 @@ class FuncReturnExprNode(ExprNode):
     def reprJSON(self):
         return {"node": self.__class__.__name__, "function identifier": self.func_id, "arguments": self.arguments}
 
+    def __str__(self) -> str:
+        return f"{self.func_id}({self.arguments})"
 
 class BinaryExprNode(ExprNode):
     def __init__(self, line: int, column: int, expr1: ExprNode, operator: BinaryOperator, expr2: ExprNode) -> None:
@@ -148,6 +160,9 @@ class BinaryExprNode(ExprNode):
     def reprJSON(self):
         return {"node": self.__class__.__name__, "operator": self.operator, "left expression": self.expr1,
                 "right expression": self.expr2}
+        
+    def __str__(self):
+        return f"{self.expr1} {self.operator} {self.expr2}"
 
 
 class UnaryExprNode(ExprNode):
@@ -161,6 +176,8 @@ class UnaryExprNode(ExprNode):
     def reprJSON(self):
         return {"node": self.__class__.__name__, "operator": self.operator, "expression": self.expr}
 
+    def __str__(self):
+        return f"!{self.expr}"
 
 class IndexAccessExprNode(ExprNode):
     def __init__(self, line: int, column: int, array: ExprNode, index: ExprNode) -> None:
@@ -173,6 +190,8 @@ class IndexAccessExprNode(ExprNode):
     def reprJSON(self):
         return {"node": self.__class__.__name__, "identifier": self.array, "index": self.index}
 
+    def __str__(self) -> str:
+        return f"{self.array}[{self.index}]"
 
 # Types
 
@@ -213,7 +232,7 @@ class TypeNameNode(Node):
 
 
 class TypeNode(Node):
-    def __init__(self, line: int, column: int, node: TypeNameNode or ArrayTypeNode, refinement: str or None) -> None:
+    def __init__(self, line: int, column: int, node: TypeNameNode or ArrayTypeNode, refinement: ExprNode or None) -> None:
         super().__init__(line, column)
         self.ttype = node.ttype
         self.refinement = refinement

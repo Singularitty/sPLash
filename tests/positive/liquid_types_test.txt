@@ -1,0 +1,4 @@
+The area of a circle with radius 
+12.000000
+is
+452.160000
