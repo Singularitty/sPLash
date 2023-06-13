@@ -18,8 +18,9 @@ This repository has a the following structure:
 │   │   ├── ast_nodes.py  
 │   │   ├── ast_transformer.py  
 │   │   └── sPLash.lark  
-│   └── typechecker  
+│   ├── typechecker  
 │   │   ├── typechecker.py  
+│   │   ├── liquidtypechecker.py  
 │   │   └── types.py  
 │   └── codegen  
 │       └── codegen.py  
@@ -40,6 +41,7 @@ Description of each item:
 		- sPLash.lark: sPLash lark grammar file 
 	- typechecker: Contains the source code for the typechecker and type definition classes
 		- typechecker: Type Checker implementation
+		- liquidtypechecker: Checks refinements of liquid types
 		- types: Type Classes defined
 	- codegen: Contains the source code for the LLVM IR code generator
 - tests: Tests for the compiler
