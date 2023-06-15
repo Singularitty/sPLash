@@ -1,7 +1,5 @@
 # sPLash Compiler
 
-## Author: Luís Ferreirinha Nº51127
-
 This repo contains a compiler for the sPLash programming language. This compiler was designed as a project for the course Técnicas de Compilação lectured in Faculdade de Ciências da Universidade de Lisboa during the 2nd Semester of 2022/23.
 
 ### Structure
